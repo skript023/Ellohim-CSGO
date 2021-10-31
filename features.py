@@ -5,6 +5,7 @@ import keyboard
 import time
 from win32gui import GetWindowText, GetForegroundWindow
 from offset_helper import g_offset
+from MathPy import *
 
 mm = memory.Memory()
 
@@ -19,18 +20,18 @@ def player_esp(activate:bool):
                 
                 if entity_team_id == 2:  # Terrorist
                     #print(hex(glow_manager + entity_glow * 0x38 + 0x28))
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x8, float(1))   # R
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0xC, float(0))   # G
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x8, float(0.5))   # R
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0xC, float(0.5))   # G
                     pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x10, float(0))   # B
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x14, float(1))  # Alpha
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x14, float(0.5))  # Alpha
                     pm.write_int(g_pointers.glow_manager + entity_glow * 0x38 + 0x28, 1)           # Enable glow
 
                 elif entity_team_id == 3:  # Counter-terrorist
                     #print(hex(glow_manager + entity_glow * 0x38 + 0x28))
                     pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x8, float(0))   # R
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0xC, float(0))   # G
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x10, float(1))   # B
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x14, float(1))  # Alpha
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0xC, float(0.5))   # G
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x10, float(0.5))   # B
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x14, float(0.5))  # Alpha
                     pm.write_int(g_pointers.glow_manager + entity_glow * 0x38 + 0x28, 1)           # Enable glow
 
 def no_flash(activate:bool):
@@ -62,6 +63,49 @@ def trigger_bot(activate:bool):
             pm.write_int(g_pointers.dwForceAttack, 6)
 
             #time.sleep(0.006)
+
+def shootatTarget(pm, client, engine, localpos, targetpos, player, engine_pointer, Silent, aimrcs, aimkey):
+    Unnormal = CalcAngle( localpos, targetpos )
+    Normal = normalizeAngles( Unnormal )
+    punchx = pm.read_float( player + g_offset.m_aimPunchAngle )
+    punchy = pm.read_float( player + g_offset.m_aimPunchAngle + 0x4 )
+    if Silent:
+        pm.write_uchar( engine + g_pointers.dwbSendPackets, 0 )
+        Commands = pm.read_int( client + g_pointers.dwInput + 0xF4 )
+        VerifedCommands = pm.read_int( client + g_pointers.dwInput + 0xF8 )
+        Desired = pm.read_int( engine_pointer + g_pointers.clientstate_last_outgoing_command ) + 2
+        OldUser = Commands + ((Desired - 1) % 150) * 100
+        VerifedOldUser = VerifedCommands + ((Desired - 1) % 150) * 0x68
+        m_buttons = pm.read_int( OldUser + 0x30 )
+        Net_Channel = pm.read_uint( engine_pointer + g_pointers.clientstate_net_channel )
+        if pm.read_int( Net_Channel + 0x18 ) < Desired:
+            pass
+        elif aimrcs and keyboard.is_pressed( aimkey ):
+            pm.write_float( OldUser + 0x0C, Normal.x )
+            pm.write_float( OldUser + 0x10, Normal.y )
+            pm.write_int( OldUser + 0x30, m_buttons | (1 << 0) )
+            pm.write_float( VerifedOldUser + 0x0C, Normal.x - (punchx * 2) )
+            pm.write_float( VerifedOldUser + 0x10, Normal.y - (punchy * 2) )
+            pm.write_int( VerifedOldUser + 0x30, m_buttons | (1 << 0) )
+            pm.write_uchar( engine + g_pointers.dwbSendPackets, 1 )
+        elif keyboard.is_pressed( aimkey ):
+            pm.write_float( OldUser + 0x0C, Normal.x )
+            pm.write_float( OldUser + 0x10, Normal.y )
+            pm.write_int( OldUser + 0x30, m_buttons | (1 << 0) )
+            pm.write_float( VerifedOldUser + 0x0C, Normal.x )
+            pm.write_float( VerifedOldUser + 0x10, Normal.y )
+            pm.write_int( VerifedOldUser + 0x30, m_buttons | (1 << 0) )
+            pm.write_uchar( engine + g_pointers.dwbSendPackets, 1 )
+    elif aimrcs and pm.read_int( player + g_offset.m_iShotsFired ) > 1 and keyboard.is_pressed( aimkey ):
+        pm.write_float( engine_pointer + g_pointers.dwClientState_ViewAngles, Normal.x - (punchx * 2) )
+        pm.write_float( engine_pointer + g_pointers.dwClientState_ViewAngles + 0x4,
+                        Normal.y - (punchy * 2) )
+
+    elif keyboard.is_pressed( aimkey ):
+        pm.write_float( engine_pointer + g_pointers.dwClientState_ViewAngles, Normal.x )
+        pm.write_float( engine_pointer + g_pointers.dwClientState_ViewAngles + 0x4,
+                        Normal.y )
+
 def force_full_update():
     pm.write_int(g_pointers.dwClientState + 0x174, -1)
     
