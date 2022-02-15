@@ -1,5 +1,5 @@
 
-class OffsetList():#dwEntityList = (0x4D4B104)#dwGlowObjectManager = (0xDA2AA0)#dwLocalPlayer = 0xDA244C
+class g_offset():#dwEntityList = (0x4D4B104)#dwGlowObjectManager = (0xDA2AA0)#dwLocalPlayer = 0xDA244C
     cs_gamerules_data = 0x0
     m_ArmorValue = 0x113CC
     m_Collision = 0x320
@@ -153,5 +153,3 @@ class BaseAddress():
     model_ambient_min = 0x58C00C
     set_abs_angles = 0x1E37C0
     set_abs_origin = 0x1E3600
-
-g_offset = OffsetList()

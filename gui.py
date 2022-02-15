@@ -1,10 +1,11 @@
 import dearpygui.dearpygui as dpg
-import features as option
-from gui_helper import g_gui
 import sys
+from gui_helper import g_gui, Timer
 from utility import is_window_exist, set_window_transparent
 from logger import g_logger
 from os import system
+from win32api import GetAsyncKeyState
+from event_loop import event_loop
 
 def main():
     g_logger.log_to_console(g_logger.info, "Renderer initialized")
@@ -71,7 +72,6 @@ def main():
     with dpg.window(tag="Primary Window", label="Ellohim CSGO", width=600, height=400, no_move=True, min_size=[250,250], no_collapse=True, on_close=lambda:sys.exit(0)):
         with dpg.handler_registry():
             dpg.add_mouse_drag_handler(callback=g_gui.drag_viewport)
-            dpg.add_key_press_handler(key=0x2D, callback=lambda:dpg.minimize_viewport())
         with dpg.tab_bar(label="Tabbar"):
             with dpg.tab(label="Player"):
                 with dpg.group(horizontal=True):
@@ -87,13 +87,17 @@ def main():
     dpg.setup_dearpygui()
     dpg.show_viewport()
 
+    timer = Timer(0.1)
+
     while dpg.is_dearpygui_running():
         if is_window_exist("Counter-Strike: Global Offensive"):
             #Option
-            option.player_esp(dpg.get_value("esp"))
-            option.no_flash(dpg.get_value("remove_flash"))
-            option.trigger_bot(dpg.get_value("trigger_bot"))
-            option.skin_changer(dpg.get_value("force_skin"))
+            event_loop.game_func(timer.update())
+
+        if GetAsyncKeyState(0x2D)&0x1: g_gui.m_opened = not g_gui.m_opened
+        if g_gui.m_opened:g_gui.show_vp()
+        if not g_gui.m_opened:g_gui.hide_vp()
+
         if not is_window_exist("Counter-Strike: Global Offensive"): sys.exit(0)
         window_width = dpg.get_item_width("Primary Window")
         window_height = dpg.get_item_height("Primary Window")
@@ -107,6 +111,7 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as er:
+        g_gui.hide_vp()
         g_logger.log_to_console(g_logger.warning, "Renderer Failed To Start")
         g_logger.log_to_console(g_logger.warning, f"Reason : {er}")
         dpg.stop_dearpygui()

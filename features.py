@@ -5,7 +5,7 @@ import keyboard
 import time
 from win32gui import GetWindowText, GetForegroundWindow
 from offset_helper import g_offset
-from MathPy import *
+from math_py import *
 
 mm = memory.Memory()
 
@@ -20,18 +20,18 @@ def player_esp(activate:bool):
                 
                 if entity_team_id == 2:  # Terrorist
                     #print(hex(glow_manager + entity_glow * 0x38 + 0x28))
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x8, float(0.5))   # R
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0xC, float(0.5))   # G
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x8, float(1))   # R
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0xC, float(0.7))   # G
                     pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x10, float(0))   # B
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x14, float(0.5))  # Alpha
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x14, float(0.8))  # Alpha
                     pm.write_int(g_pointers.glow_manager + entity_glow * 0x38 + 0x28, 1)           # Enable glow
 
                 elif entity_team_id == 3:  # Counter-terrorist
                     #print(hex(glow_manager + entity_glow * 0x38 + 0x28))
                     pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x8, float(0))   # R
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0xC, float(0.5))   # G
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x10, float(0.5))   # B
-                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x14, float(0.5))  # Alpha
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0xC, float(0.7))   # G
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x10, float(1))   # B
+                    pm.write_float(g_pointers.glow_manager + entity_glow * 0x38 + 0x14, float(0.8))  # Alpha
                     pm.write_int(g_pointers.glow_manager + entity_glow * 0x38 + 0x28, 1)           # Enable glow
 
 def no_flash(activate:bool):
